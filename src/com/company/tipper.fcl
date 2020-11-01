@@ -1,7 +1,92 @@
 /*
-
-
-
-
-	
+    input variables -> error_angle, treeAngle, ballDist, treeDist,
+    output variables -> steering_angle, speed, acceleration
 */
+
+FUNCTION_BLOCK steering
+
+VAR_INPUT
+        error_angle : REAL;
+        tree_angle : REAL;
+        ball_dist : REAL;
+        tree_dist : REAL;
+        speed : REAL;
+END_VAR
+
+VAR_OUTPUT				// Defining output variable
+	    steering_angle : REAL;
+	    acceleration : REAL;
+END_VAR
+
+// ######### START FUZZIFICATION #########
+
+FUZZIFY error_angle
+	    TERM large_positive := (30, 0) (90, 1) (180, 1);
+	    TERM small_positive := (0, 0) (30, 1) (60, 0) ;
+	    TERM zero := (-30, 0) (0, 1) (30, 0);
+        TERM small_negative := (-60, 0) (-30, 1) (0, 0);
+        TERM large_negative := (-180, 1) (-60, 1) (-30, 0);
+END_FUZZIFY
+
+FUZZIFY tree_angle
+	    TERM large_positive := (30, 0) (90, 1) (180, 1);
+	    TERM small_positive := (0, 0) (30, 1) (60, 0) ;
+	    TERM zero := (-30, 0) (0, 1) (30, 0);
+        TERM small_negative := (-60, 0) (-30, 1) (0, 0);
+        TERM large_negative := (-180, 1) (-60, 1) (-30, 0);
+END_FUZZIFY
+
+FUZZIFY ball_dist
+        TERM zero := (0, 1) (3, 1) (9, 0);
+        TERM real_close := (3, 0) (12, 1) (18, 0);
+        TERM close := (12, 0) (24, 1) (36, 0);
+        TERM medium := (24, 0) (60, 1) (96, 0);
+        TERM far := (60, 0) (150, 1) (600, 1);
+END_FUZZIFY
+
+FUZZIFY tree_dist
+        TERM close := (0, 1) (50, 0) (1000, 0);
+END_FUZZIFY
+
+FUZZIFY speed
+        TERM zero := (0, 1) (0.5, 0);
+        TERM real_slow := (0, 0) (0.7, 1) (1.5, 0);
+        TERM slow := (0.5, 0) (1.5, 1) (2.5, 0);
+        TERM medium := (1.5, 0) (2.5, 1) (3.5, 0);
+        TERM fast := (0, 0) (2.5, 0) (5.0, 1);
+END_FUZZIFY
+
+// ######### END FUZZIFICATION #########
+
+// ######### START DEFUZZIFICATION  #########
+
+DEFUZZIFY steering_angle
+	TERM hard_left := (7.5,0) (22.5,1) (45,0);
+    TERM slight_left := (0,0) (7.5,1) (15,0);
+    TERM zero := (-7.5,0) (0,1) (7.5,0);
+    TERM slight_right := (-15,0) (-7.5,1) (0,0);
+    TERM hard_right := (-45,1) (-15,1) (-7.5,0);
+
+	METHOD : COG;		// Use 'Center Of Gravity' defuzzification method
+	DEFAULT := 0;		// Default value is 0 (if no rule activates defuzzifier)
+END_DEFUZZIFY
+
+DEFUZZIFY acceleration
+	TERM brake_hard := (-2, 1) (-1.5,1) (-1,0);
+	TERM brake_light := (-1.5, 0) (-1, 1) (-0.5,0);
+	TERM coast := (-1, 0) (-0.5,1) (0,0);
+	TERM zero := (-0.5, 0) (0, 0) (0.5, 0);
+	TERM slight_acceleration := (0, 0) (0.5, 1) (1, 0);
+	TERM floor_it := (0.5, 0) (1, 1);
+
+	METHOD : COG;		// Use 'Center Of Gravity' defuzzification method
+	DEFAULT := 0;		// Default value is 0 (if no rule activates defuzzifier)
+END_DEFUZZIFY
+
+// ######### END DEFUZZIFICATION #########
+
+// ######### START RULE BLOCK #########
+
+
+
+// ######### START RULE BLOCK #########

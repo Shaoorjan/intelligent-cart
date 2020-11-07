@@ -30,8 +30,14 @@ END_FUZZIFY
 
 FUZZIFY tree_angle
 	    TERM large_positive := (30, 0) (90, 1) (180, 1);
+	    // add somewhat_small_positive ***
+	    TERM somewhat_small_positive := (0, 0) (7.5, 0.5) (15, 0.7) (22.5, 0.87) (30, 1) (37.5, 0.5) (45, 0.7) (52.5, 0.87) (60, 0);
 	    TERM small_positive := (0, 0) (30, 1) (60, 0) ;
+	    // add somewhat_zero ***
+	    TERM somewhat_zero := (-30, 0) (-22.5, 0.5) (-15, 0.7) (-7.5, 0.87) (0, 1) (7.5, 0.87) (15, 0.7) (22.5, 0.5) (30, 0);
 	    TERM zero := (-30, 0) (0, 1) (30, 0);
+	    // add somewhat_small_negative ***
+	    TERM somewhat_small_negative := (-60, 0) (-52.5, 0.5) (-45, 0.7) (-37.5, 0.87) (-30, 1) (-22.5, 0.87) (-15, 0.7) (-7.5, 0.5) (0, 0);
         TERM small_negative := (-60, 0) (-30, 1) (0, 0);
         TERM large_negative := (-180, 1) (-60, 1) (-30, 0);
 END_FUZZIFY
@@ -45,6 +51,10 @@ FUZZIFY ball_dist
 END_FUZZIFY
 
 FUZZIFY tree_dist
+        // add somewhat_close ***
+        TERM somewhat_close := (0, 1) (12.5, 0.8) (25, 0.7) (37.5, 0.5) (50, 0) (287.5, 0) (525, 0) (762.5, 0) (1000, 0);
+        // add very_close ***
+        TERM somewhat_close := (0, 1) (12.5, 0.5) (25, 0.25) (37.5, 0.062) (50, 0) (287.5, 0) (525, 0) (762.5, 0) (1000, 0);
         TERM close := (0, 1) (50, 0) (1000, 0);
 END_FUZZIFY
 
@@ -53,6 +63,8 @@ FUZZIFY speed
         TERM real_slow := (0, 0) (0.7, 1) (1.5, 0);
         TERM slow := (0.5, 0) (1.5, 1) (2.5, 0);
         TERM medium := (1.5, 0) (2.5, 1) (3.5, 0);
+        // add very_fast ***
+        TERM fast := (0, 0) (0.625, 0) (1.25, 0) (1.875,0) (2.5, 0) (3.125,0.25) (3.75, 0.25) (4.35, 0.5) (5.0, 1);
         TERM fast := (0, 0) (2.5, 0) (5.0, 1);
 END_FUZZIFY
 
@@ -88,5 +100,163 @@ END_DEFUZZIFY
 // ######### START RULE BLOCK #########
 
 
+// ==== RULES FOR STEERING ====
+RULEBLOCK S
+    AND : MIN;
+    ACT : PROD;
+    ACCU : MAX;
+
+    // maintaining steering direction
+    RULE 1 : IF error_angle IS zero
+             AND tree_distance IS NOT SOMEWHAT close
+             AND tree_angle IS NOT SOMEWHAT zero
+             THEN steering_angle IS zero;
+
+    // change steering direction slightly right
+    RULE 2 : IF error_angle IS small_positive
+             AND tree_distance IS NOT somewhat_close
+             AND tree_angle IS NOT somewhat_zero
+             THEN steering_angle IS slight_right
+
+    // change steering direction slightly left
+    RULE 3 : IF error_angle IS small_negative
+             AND tree_distance IS NOT somewhat_close
+             AND tree_angle IS NOT somewhat_zero
+             THEN steering_angle IS slight_left
+
+    // change steering direction slightly right
+    RULE 4 : IF error_angle is large_positive
+             AND speed IS fast
+             THEN steering_angle IS slight_right
+
+    // change steering direction gard right
+    RULE 5 : IF error_angle IS large_positive
+             AND speed IS NOT fast
+             THEN steering_angle IS hard_right
+
+    // change steering direction slightly left
+    RULE 6 : IF error_angle IS large_negative
+             AND speed IS fast
+             THEN steering_angle IS slight_left
+
+    // change steering direction hard left
+    RULE 7 : IF error_angle IS large_negative
+             AND speed IS NOT fast
+             THEN steering_angle IS hard_left
+
+END_RULEBLOCK
+
+// ==== RULES FOR ACCELERATION ====
+RULEBLOCK A
+    AND : MIN;
+    ACT : PROD;
+    ACCU : MAX;
+
+    // brake lightly
+    RULE 1 : IF error_angle IS large_positive
+             AND speed IS fast
+             THEN acceleration IS brake_light
+
+    // brake lightly
+    RULE 2 : IF error_angle IS  large_negative
+             AND speed ID fast
+             THEN acceleration IS brake_light
+
+    // floor it
+    RULE 3 : IF ball_distance IS far
+             AND speed IS NOT very_fast
+             THEN acceleration IS floor_it
+
+    // set acceleration to zero
+    RULE 4 : IF ball_distance IS far
+             AND speed IS very_fast
+             THEN acceleration IS zero
+
+    // slight acceleration
+    RULE 5 : IF ball_distance IS medium
+             AND speed IS NOT fast
+             THEN acceleration IS slight_acceleration
+
+    // set acceleration to zero
+    RULE 6 : IF ball_distance IS medium
+             AND speed IS fast
+             THEN acceleration IS zero
+
+    // brake lightly
+    RULE 7 : IF ball_distance IS close
+             AND speed IS fast
+             THEN acceleration IS brake_light
+
+    // slight acceleration
+    RULE 8 : IF ball_distance IS close
+             AND speed IS zero
+             THEN acceleration IS slight_acceleration
+
+    // brake hard
+    RULE 9 : IF ball_distance IS real_close
+             AND speed IS fast
+             THEN acceleration IS brake_hard
+
+    // brake lightly
+    RULE 10 : IF ball_distance IS real_close
+              AND speed IS medium
+              THEN acceleration IS brake_light
+
+    // coast
+    RULE 11 : IF ball_distance IS real_close
+              AND speed IS slow
+              THEN acceleration IS coast
+
+    // set acceleration to zero
+    RULE 12 : IF ball_distance IS real_close
+              AND speed IS real_slow
+              THEN acceleration IS zero
+
+    // slight acceleration
+    RULE 13 : IF ball_distance IS real_close
+              AND speed IS zero
+              THEN acceleration IS slight_acceleration
+
+    // brake hard
+    RULE 14 : IF ball_distance IS zero
+              AND speed IS NOT zero
+              THEN acceleration IS brake_hard
+
+    // coast
+    RULE 15 : IF ball_distance IS close
+              AND speed IS medium
+              THEN acceleration IS coast
+
+    // set acceleration to zero
+    RULE 16 : IF ball_distance IS close
+              AND speed IS slow
+              THEN acceleration IS zero
+
+END_RULEBLOCK
+
+// ==== RULES TO AVOID TREE ====
+RULEBLOCK T
+    AND : MIN;
+    ACT : PROD;
+    ACCU : MAX;
+
+    // turning slightly left to avoid tree
+    RULE 1 : IF tree_distance IS somewhat_close
+             AND tree_angle IS somewhat_zero
+             AND tree_angle IS somewhat_small_positive
+             THEN steering_angle IS slight_left
+
+    // turn slightly right to avoid tree
+    RULE 2 : IF tree_distance IS somewhat_close
+             AND tree_angle IS somewhat_zero
+             AND tree_angle IS somewhat_small_negative
+             THEN steering_angle IS slightly_right
+
+    // brake hard to avoid tree
+    RULE 3 : IF tree_distance IS very_close
+             AND tree_angle IS zero
+             THEN acceleration IS brake_hard
+
+END_RULEBLOCK
 
 // ######### START RULE BLOCK #########

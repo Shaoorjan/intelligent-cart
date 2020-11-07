@@ -76,6 +76,7 @@ DEFUZZIFY steering_angle
 	TERM hard_left := (7.5,0) (22.5,1) (45,0);
     TERM slight_left := (0,0) (7.5,1) (15,0);
     TERM zero := (-7.5,0) (0,1) (7.5,0);
+
     TERM slight_right := (-15,0) (-7.5,1) (0,0);
     TERM hard_right := (-45,1) (-15,1) (-7.5,0);
 
@@ -108,41 +109,41 @@ RULEBLOCK S
 
     // maintaining steering direction
     RULE 1 : IF error_angle IS zero
-             AND tree_distance IS NOT SOMEWHAT close
-             AND tree_angle IS NOT SOMEWHAT zero
+             AND tree_distance IS NOT somewhat_close
+             AND tree_angle IS NOT somewhat_zero
              THEN steering_angle IS zero;
 
     // change steering direction slightly right
     RULE 2 : IF error_angle IS small_positive
              AND tree_distance IS NOT somewhat_close
              AND tree_angle IS NOT somewhat_zero
-             THEN steering_angle IS slight_right
+             THEN steering_angle IS slight_right;
 
     // change steering direction slightly left
     RULE 3 : IF error_angle IS small_negative
              AND tree_distance IS NOT somewhat_close
              AND tree_angle IS NOT somewhat_zero
-             THEN steering_angle IS slight_left
+             THEN steering_angle IS slight_left;
 
     // change steering direction slightly right
     RULE 4 : IF error_angle is large_positive
              AND speed IS fast
-             THEN steering_angle IS slight_right
+             THEN steering_angle IS slight_right;
 
     // change steering direction gard right
     RULE 5 : IF error_angle IS large_positive
              AND speed IS NOT fast
-             THEN steering_angle IS hard_right
+             THEN steering_angle IS hard_right;
 
     // change steering direction slightly left
     RULE 6 : IF error_angle IS large_negative
              AND speed IS fast
-             THEN steering_angle IS slight_left
+             THEN steering_angle IS slight_left;
 
     // change steering direction hard left
     RULE 7 : IF error_angle IS large_negative
              AND speed IS NOT fast
-             THEN steering_angle IS hard_left
+             THEN steering_angle IS hard_left;
 
 END_RULEBLOCK
 
@@ -155,82 +156,82 @@ RULEBLOCK A
     // brake lightly
     RULE 1 : IF error_angle IS large_positive
              AND speed IS fast
-             THEN acceleration IS brake_light
+             THEN acceleration IS brake_light;
 
     // brake lightly
-    RULE 2 : IF error_angle IS  large_negative
-             AND speed ID fast
-             THEN acceleration IS brake_light
+    RULE 2 : IF error_angle IS large_negative
+             AND speed IS fast
+             THEN acceleration IS brake_light;
 
     // floor it
     RULE 3 : IF ball_distance IS far
              AND speed IS NOT very_fast
-             THEN acceleration IS floor_it
+             THEN acceleration IS floor_it;
 
     // set acceleration to zero
     RULE 4 : IF ball_distance IS far
              AND speed IS very_fast
-             THEN acceleration IS zero
+             THEN acceleration IS zero;
 
     // slight acceleration
     RULE 5 : IF ball_distance IS medium
              AND speed IS NOT fast
-             THEN acceleration IS slight_acceleration
+             THEN acceleration IS slight_acceleration;
 
     // set acceleration to zero
     RULE 6 : IF ball_distance IS medium
              AND speed IS fast
-             THEN acceleration IS zero
+             THEN acceleration IS zero;
 
     // brake lightly
     RULE 7 : IF ball_distance IS close
              AND speed IS fast
-             THEN acceleration IS brake_light
+             THEN acceleration IS brake_light;
 
     // slight acceleration
     RULE 8 : IF ball_distance IS close
              AND speed IS zero
-             THEN acceleration IS slight_acceleration
+             THEN acceleration IS slight_acceleration;
 
     // brake hard
     RULE 9 : IF ball_distance IS real_close
              AND speed IS fast
-             THEN acceleration IS brake_hard
+             THEN acceleration IS brake_hard;
 
     // brake lightly
     RULE 10 : IF ball_distance IS real_close
               AND speed IS medium
-              THEN acceleration IS brake_light
+              THEN acceleration IS brake_light;
 
     // coast
     RULE 11 : IF ball_distance IS real_close
               AND speed IS slow
-              THEN acceleration IS coast
+              THEN acceleration IS coast;
 
     // set acceleration to zero
     RULE 12 : IF ball_distance IS real_close
               AND speed IS real_slow
-              THEN acceleration IS zero
+              THEN acceleration IS zero;
 
     // slight acceleration
     RULE 13 : IF ball_distance IS real_close
               AND speed IS zero
-              THEN acceleration IS slight_acceleration
+              THEN acceleration IS slight_acceleration;
 
     // brake hard
     RULE 14 : IF ball_distance IS zero
               AND speed IS NOT zero
-              THEN acceleration IS brake_hard
+              THEN acceleration IS brake_hard;
 
     // coast
     RULE 15 : IF ball_distance IS close
               AND speed IS medium
-              THEN acceleration IS coast
+              THEN acceleration IS coast;
 
     // set acceleration to zero
     RULE 16 : IF ball_distance IS close
               AND speed IS slow
-              THEN acceleration IS zero
+              THEN acceleration IS zero;
 
 END_RULEBLOCK
 
@@ -244,19 +245,22 @@ RULEBLOCK T
     RULE 1 : IF tree_distance IS somewhat_close
              AND tree_angle IS somewhat_zero
              AND tree_angle IS somewhat_small_positive
-             THEN steering_angle IS slight_left
+             THEN steering_angle IS slight_left;
 
     // turn slightly right to avoid tree
     RULE 2 : IF tree_distance IS somewhat_close
              AND tree_angle IS somewhat_zero
              AND tree_angle IS somewhat_small_negative
-             THEN steering_angle IS slightly_right
+             THEN steering_angle IS slight_right;
 
     // brake hard to avoid tree
     RULE 3 : IF tree_distance IS very_close
              AND tree_angle IS zero
-             THEN acceleration IS brake_hard
+             THEN acceleration IS brake_hard;
 
 END_RULEBLOCK
 
-// ######### START RULE BLOCK #########
+// ######### End RULE BLOCK #########
+
+END_FUNCTION_BLOCK
+
